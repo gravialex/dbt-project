@@ -1,3 +1,5 @@
 my_dbt_project\target
 env
 logs
+.env
+profiles.yml
