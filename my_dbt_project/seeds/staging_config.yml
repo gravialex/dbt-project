@@ -1,0 +1,28 @@
+version: 2
+
+seeds:
+  - name: staging_config
+    description: "A simplified configuration file that maps raw source columns to target staging columns, defining standardized names, target data types, and column order. This file serves as the foundation for auto-generating staging models."
+    config:
+      # Use quotes around column names to ensure compatibility, e.g., if a column were named 'order'.
+      quote_columns: true
+    columns:
+      - name: raw_table_name
+        type: VARCHAR
+        description: "The name of the source table in the RAW schema (e.g., CANDIDATES)."
+
+      - name: raw_column_name
+        type: VARCHAR
+        description: "The original name of the column in the source table (e.g., CANDIDATE_ID)."
+
+      - name: target_column_name
+        type: VARCHAR
+        description: "The desired, standardized name for the column in the staging layer (e.g., candidate_id)."
+
+      - name: target_data_type
+        type: VARCHAR
+        description: "The desired target data type for the column, used to infer casting logic (e.g., TIMESTAMP_NTZ, BOOLEAN, NUMBER)."
+
+      - name: target_order_num
+        type: INT
+        description: "The desired ordinal position of the column in the final staging model, used for sorting."
