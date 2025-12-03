@@ -35,6 +35,9 @@ models:
     staging:
       +materialized: view
       +schema: stg 
+    marts:
+      +materialized: table
+      +schema: dwh 
 
 seeds:
   +quote_columns: true
