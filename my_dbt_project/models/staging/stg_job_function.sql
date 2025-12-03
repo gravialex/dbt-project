@@ -1,28 +1,16 @@
-{{ config(materialized='view') }}
+{{ config(
+    materialized='incremental',
+    unique_key=['job_function_id', 'row_valid_from']
+) }}
 
-with source as (
+{{ staging_model(
+    source_name='job_functions',
+    natural_key='job_function_id'
+) }}
 
-    select * from {{ source('raw', 'JOB_FUNCTIONS') }}
+{% if is_incremental() %}
 
-),
+  -- this filter can be adapted based on the replication strategy
+  where updated_at > (select max(updated_at) from {{ this }})
 
-renamed as (
-
-    select
-        "JOB_FUNCTION_ID" as id,
-        "BASE_NAME" as base_name,
-        "CATEGORY" as category,
-        "LEVEL" as level,
-        "TRACK" as track,
-        "SENIORITY_LEVEL" as seniority_level,
-        try_to_number("SENIORITY_INDEX") as seniority_index,
-        "IS_ACTIVE"::boolean as is_active,
-        to_timestamp_ntz(try_to_number("_CREATED_MICROS") / 1000000) as created_at,
-        to_timestamp_ntz(try_to_number("_UPDATED_MICROS") / 1000000) as updated_at,
-        "_OFFSET" as offset
-
-    from source
-
-)
-
-select * from renamed
+{% endif %}

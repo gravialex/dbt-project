@@ -1,29 +1,16 @@
-{{ config(materialized='view') }}
+{{ config(
+    materialized='incremental',
+    unique_key=['employee_id', 'row_valid_from']
+) }}
 
-with source as (
+{{ staging_model(
+    source_name='employees',
+    natural_key='employee_id'
+) }}
 
-    select * from {{ source('raw', 'EMPLOYEES') }}
+{% if is_incremental() %}
 
-),
+  -- this filter can be adapted based on the replication strategy
+  where updated_at > (select max(updated_at) from {{ this }})
 
-renamed as (
-    select
-        "EMPLOYEE_ID" as id,
-        "JOB_FUNCTION_ID" as job_function_id,
-        "PRIMARY_SKILL_ID" as primary_skill_id,
-        "PRODUCTION_CATEGORY" as production_category,
-        "EMPLOYMENT_STATUS" as employment_status,
-        "ORG_CATEGORY" as org_category,
-        "ORG_CATEGORY_TYPE" as org_category_type,
-        "IS_ACTIVE"::boolean as is_active,
-        to_timestamp_ntz(try_to_number("WORK_START_MICROS") / 1000000) as work_start_date,
-        to_timestamp_ntz(try_to_number("WORK_END_MICROS") / 1000000) as work_end_date,
-        to_timestamp_ntz(try_to_number("_CREATED_MICROS") / 1000000) as created_at,
-        to_timestamp_ntz(try_to_number("_UPDATED_MICROS") / 1000000) as updated_at,
-        "_OFFSET" as offset
-
-    from source
-
-)
-
-select * from renamed
+{% endif %}

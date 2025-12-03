@@ -1,29 +1,16 @@
-{{ config(materialized='view') }}
+{{ config(
+    materialized='incremental',
+    unique_key=['skill_id', 'row_valid_from']
+) }}
 
-with source as (
+{{ staging_model(
+    source_name='skills',
+    natural_key='skill_id'
+) }}
 
-    select * from {{ source('raw', 'SKILLS') }}
+{% if is_incremental() %}
 
-),
+  -- this filter can be adapted based on the replication strategy
+  where updated_at > (select max(updated_at) from {{ this }})
 
-renamed as (
-
-    select
-        "ID" as id,
-        "PARENT_ID" as parent_skill_id,
-        "NAME" as skill_name,
-        "TYPE" as skill_type,
-        "URL" as skill_url,
-        "IS_KEY_REASON" as key_skill_reason,
-        "IS_ACTIVE"::boolean as is_active,
-        "IS_PRIMARY"::boolean as is_primary,
-        "IS_KEY"::boolean as is_key,
-        to_timestamp_ntz(try_to_number("_CREATED_MICROS") / 1000000) as created_at,
-        to_timestamp_ntz(try_to_number("_UPDATED_MICROS") / 1000000) as updated_at,
-        "_OFFSET" as offset
-
-    from source
-
-)
-
-select * from renamed
+{% endif %}
