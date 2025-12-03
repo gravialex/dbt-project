@@ -2,27 +2,27 @@ version: 2
 
 sources:
   - name: raw
-    database: DBT_PROJECT
-    schema: RAW
-    description: "This source contains raw data."
+    database: dbt_project
+    schema: raw
+    description: "this source contains raw data."
     freshness:
       warn_after: {count: 7, period: day}
       error_after: {count: 30, period: day}
-    loaded_at_field: "to_timestamp_ntz(try_to_number(_UPDATED_MICROS) / 1000000)"
+    loaded_at_field: "to_timestamp_ntz(try_to_number(_updated_micros) / 1000000)"
 
     tables:
-      - name: CANDIDATES
+      - name: candidates
         freshness:
           error_after: {count: 1, period: hour}
-        loaded_at_field: "to_timestamp_ntz(try_to_number(_UPDATED_MICROS) / 1000000)"
+        loaded_at_field: "to_timestamp_ntz(try_to_number(_updated_micros) / 1000000)"
 
-      - name: EMPLOYEES
+      - name: employees
 
-      - name: INTERVIEWS
+      - name: interviews
         freshness:
           warn_after: {count: 4, period: hour}
-        loaded_at_field: "to_timestamp_ntz(try_to_number(_UPDATED_MICROS) / 1000000)"
+        loaded_at_field: "to_timestamp_ntz(try_to_number(_updated_micros) / 1000000)"
 
-      - name: JOB_FUNCTIONS
+      - name: job_functions
 
-      - name: SKILLS
+      - name: skills
