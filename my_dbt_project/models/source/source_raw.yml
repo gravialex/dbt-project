@@ -15,14 +15,54 @@ sources:
         freshness:
           error_after: {count: 1, period: hour}
         loaded_at_field: "to_timestamp_ntz(try_to_number(_updated_micros) / 1000000)"
-
+        columns:
+          - name: candidate_id
+            tests:
+              - not_null
+ 
       - name: employees
+        columns:
+          - name: employee_id
+            tests:
+              - not_null
+          - name: primary_skill_id
+            tests:
+              - relationships: # Referential integrity
+                  to: source('sources', 'skills')
+                  field: skill_id
+          - name: job_function_id
+            tests:
+              - relationships:
+                  to: source('sources', 'job_functions')
+                  field: job_function_id
 
       - name: interviews
         freshness:
           warn_after: {count: 4, period: hour}
         loaded_at_field: "to_timestamp_ntz(try_to_number(_updated_micros) / 1000000)"
+        columns:
+          - name: id
+            description: "Primary key for the interview."
+            tests:
+              - not_null
+          - name: candidate_id
+            description: "Foreign key to the candidates table."
+            tests:
+              - not_null
+          - name: interviewer_id
+            description: "Foreign key to the employees table."
+            tests:
+              - not_null
 
       - name: job_functions
+        columns:
+          - name: job_function_id
+            tests:
+              - not_null
 
       - name: skills
+        columns:
+          - name: id
+            tests:
+              - not_null
+

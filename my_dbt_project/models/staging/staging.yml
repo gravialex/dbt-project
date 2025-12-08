@@ -1,0 +1,69 @@
+# models/staging/staging.yml
+version: 2
+
+models:
+  - name: stg_interview
+    # MODEL-LEVEL tests are defined here
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - interview_id
+            - row_valid_from
+    columns:
+      # COLUMN-LEVEL tests are nested under each column
+      - name: interview_id
+        tests:
+          - not_null
+
+      - name: candidate_id # The test is on this column
+        tests:
+          - is_unique_per_partition:
+              # Arguments for the generic test are nested
+              arguments:
+                partition_column: 'interview_id'
+
+      - name: interviewer_id # The test is on this column
+        tests:
+          - is_unique_per_partition:
+              arguments:
+                partition_column: 'interview_id'
+
+      - name: updated_at
+        tests:
+          - dbt_expectations.expect_column_values_to_be_increasing:
+              group_by: ["interview_id"]
+
+      - name: interview_status
+        tests:
+          - dbt_expectations.expect_column_values_to_be_in_set:
+              value_set: ['DRAFT', 'REQUESTED', 'PENDING_FEEDBACK', 'CANCELLED', 'SCHEDULED', 'COMPLETED', 'IN_PROGRESS']
+
+  - name: stg_employee
+    # MODEL-LEVEL tests are defined here
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - employee_id
+            - row_valid_from
+    columns:
+      # COLUMN-LEVEL tests are nested under each column
+      - name: employee_id
+        tests:
+          - not_null
+      - name: employment_status
+        tests:
+          - dbt_expectations.expect_column_values_to_be_in_set:
+              value_set: ['Full-time employee', 'Subcontractor', 'Maternity leave','Part-time employee','Trainee','Extended leave']
+
+  - name: stg_candidate
+    # MODEL-LEVEL tests are defined here
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - candidate_id
+            - row_valid_from
+    columns:
+      # COLUMN-LEVEL tests are nested under each column
+      - name: candidate_id
+        tests:
+          - not_null
